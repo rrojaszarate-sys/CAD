@@ -1,0 +1,569 @@
+// Esquema de Base de Datos - Sistema CAD
+// Computer-Aided Dispatch System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USUARIOS Y AUTENTICACIÓN
+// ============================================
+
+model User {
+  id                String    @id @default(uuid())
+  username          String    @unique
+  password          String
+  email             String?   @unique
+  firstName         String
+  lastName          String
+  middleName        String?
+  phone             String?
+  profileId         String
+  profile           Profile   @relation(fields: [profileId], references: [id])
+  isActive          Boolean   @default(true)
+  isBlocked         Boolean   @default(false)
+  loginAttempts     Int       @default(0)
+  lastLogin         DateTime?
+
+  // Configuración telefónica
+  phoneAccessEnabled Boolean  @default(false)
+  extension          String?  @unique
+  extensionActive    Boolean  @default(false)
+
+  // Permisos
+  municipalities     UserMunicipality[]
+  corporations       UserCorporation[]
+
+  // Auditoría
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+
+  // Relaciones
+  incidents         Incident[]
+  auditLogs         AuditLog[]
+  absences          Absence[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  permissions Json     // Permisos específicos del perfil
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+
+  @@map("profiles")
+}
+
+// ============================================
+// CATÁLOGOS GEOGRÁFICOS
+// ============================================
+
+model Municipality {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  state     String   @default("Estado de México")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  colonies  Colony[]
+  incidents Incident[]
+  users     UserMunicipality[]
+
+  @@map("municipalities")
+}
+
+model Colony {
+  id            String       @id @default(uuid())
+  name          String
+  postalCode    String
+  municipalityId String
+  municipality  Municipality @relation(fields: [municipalityId], references: [id])
+
+  // Coordenadas del centroide
+  latitude      Float?
+  longitude     Float?
+
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  incidents     Incident[]
+
+  @@unique([name, municipalityId])
+  @@map("colonies")
+}
+
+model Street {
+  id            String   @id @default(uuid())
+  name          String
+  municipalityId String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([name, municipalityId])
+  @@map("streets")
+}
+
+// ============================================
+// TIPOS DE INCIDENTES
+// ============================================
+
+model IncidentType {
+  id            String        @id @default(uuid())
+  code          String        @unique
+  name          String
+  parentId      String?
+  parent        IncidentType? @relation("TypeHierarchy", fields: [parentId], references: [id])
+  children      IncidentType[] @relation("TypeHierarchy")
+
+  // Configuración
+  category      String        // Seguridad Pública, Emergencias Médicas, etc.
+  defaultPriority String      // Crítica, Alta, Media, Baja
+  expectedResponseTime Int    // En minutos
+  requiresQuestionnaire Boolean @default(false)
+  protocolCode  String?
+
+  // Corporaciones sugeridas
+  suggestedCorporations Json  // Array de IDs de corporaciones
+
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  incidents     Incident[]
+
+  @@map("incident_types")
+}
+
+// ============================================
+// CORPORACIONES
+// ============================================
+
+model Corporation {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  name        String    @unique
+  type        String    // Policía, Bomberos, Cruz Roja, etc.
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  units       Unit[]
+  incidentCorporations IncidentCorporation[]
+  users       UserCorporation[]
+
+  @@map("corporations")
+}
+
+model Unit {
+  id            String      @id @default(uuid())
+  economicNumber String     @unique
+  plateNumber   String?
+  corporationId String
+  corporation   Corporation @relation(fields: [corporationId], references: [id])
+
+  // Estado de la unidad
+  status        String      @default("DISPONIBLE") // DISPONIBLE, ASIGNADA, EN_CAMINO, EN_LUGAR, NO_DISPONIBLE
+  sector        String?
+  currentMissionId String?  @unique
+
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  missions      Mission[]
+  logs          UnitLog[]
+
+  @@map("units")
+}
+
+// ============================================
+// LLAMADAS
+// ============================================
+
+model PhoneCall {
+  id          String    @id @default(uuid())
+
+  // Información ANI/ALI
+  phoneNumber String
+  phoneType   String?   // MÓVIL, FIJO
+  carrier     String?   // TELCEL, MOVISTAR, etc.
+
+  // Información CNI
+  street      String?
+  colony      String?
+  postalCode  String?
+  municipality String?
+  latitude    Float?
+  longitude   Float?
+
+  // Estado de la llamada
+  status      String    @default("ENTRANTE") // ENTRANTE, CONTESTADA, EN_ESPERA, TRANSFERIDA, FINALIZADA
+  classification String? // CREAR_NUEVO, ADJUNTAR, COMPLEMENTAR, NO_PROCEDENTE
+
+  // Tiempos
+  startTime   DateTime  @default(now())
+  answerTime  DateTime?
+  endTime     DateTime?
+  duration    Int?      // En segundos
+
+  // Restricciones detectadas
+  hasRestriction Boolean @default(false)
+  restrictionType String? // BROMA, ORDEN, CAUTELAR, PROTECCION, GEAVI, RECURRENTE
+
+  // Relaciones
+  operatorId  String?
+  operator    User?     @relation(fields: [operatorId], references: [id])
+  incidentId  String?
+  incident    Incident? @relation(fields: [incidentId], references: [id])
+  restrictionId String?
+  restriction PhoneRestriction? @relation(fields: [restrictionId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([phoneNumber])
+  @@map("phone_calls")
+}
+
+model PhoneRestriction {
+  id          String    @id @default(uuid())
+  phoneNumber String    @unique
+  type        String    // BROMA, ORDEN, CAUTELAR, PROTECCION, GEAVI, RECURRENTE
+
+  // Datos de la persona
+  personName  String?
+  address     String?
+
+  // Información legal
+  fileNumber  String?
+  authority   String?
+  startDate   DateTime
+  endDate     DateTime?
+  isIndefinite Boolean  @default(false)
+
+  observations String?
+  isActive    Boolean   @default(true)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+
+  calls       PhoneCall[]
+
+  @@map("phone_restrictions")
+}
+
+// ============================================
+// INCIDENTES
+// ============================================
+
+model Incident {
+  id            String    @id @default(uuid())
+  folio         String    @unique // EDOMEX/1/19111100072
+
+  // Ubicación
+  municipalityId String
+  municipality  Municipality @relation(fields: [municipalityId], references: [id])
+  street        String
+  crossStreet   String?
+  colonyId      String?
+  colony        Colony?   @relation(fields: [colonyId], references: [id])
+  postalCode    String
+  pointOfInterest String?
+  references    String?
+  latitude      Float?
+  longitude     Float?
+  fullAddress   String
+
+  // Tipo y prioridad
+  incidentTypeId String
+  incidentType  IncidentType @relation(fields: [incidentTypeId], references: [id])
+  priority      String    // CRITICA, ALTA, MEDIA, BAJA
+  priorityLevel Int       @default(3) // 1=Crítica, 2=Alta, 3=Media, 4=Baja
+  priorityModifiedBy String?
+  priorityReason String?
+
+  // Estado
+  status        String    @default("EN_CAPTURA") // EN_CAPTURA, CANALIZADO, ASIGNADO, EN_PROCESO, CERRADO
+
+  // Datos del llamante
+  callerName    String?
+  callerLastName String?
+  callerMiddleName String?
+  callerPhone   String?
+  callerAltPhone String?
+  callerRelation String? // VICTIMA, TESTIGO, FAMILIAR, ANONIMO
+  requiresFollowup Boolean @default(false)
+  isAnonymous   Boolean   @default(false)
+
+  // Descripción
+  description   String?
+  notes         String?
+
+  // Protocolo y cuestionario
+  questionnaireData Json?
+  protocolData  Json?
+
+  // Tiempos
+  createdAt     DateTime  @default(now())
+  channelizedAt DateTime?
+  closedAt      DateTime?
+  updatedAt     DateTime  @updatedAt
+
+  // Usuario creador
+  operatorId    String
+  operator      User      @relation(fields: [operatorId], references: [id])
+
+  // Reactivación
+  isReactivated Boolean   @default(false)
+  reactivatedAt DateTime?
+  reactivationReason String?
+
+  // Relaciones
+  calls         PhoneCall[]
+  involved      Involved[]
+  corporations  IncidentCorporation[]
+  missions      Mission[]
+  history       IncidentHistory[]
+
+  @@index([folio])
+  @@index([status])
+  @@index([createdAt])
+  @@map("incidents")
+}
+
+// ============================================
+// INVOLUCRADOS EN INCIDENTES
+// ============================================
+
+model Involved {
+  id          String    @id @default(uuid())
+  incidentId  String
+  incident    Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  type        String    // PERSONA, VEHICULO, INMUEBLE, TELEFONO, ARMA, SUSTANCIA, DOCUMENTO
+
+  // Datos en formato JSON según el tipo
+  data        Json
+
+  // Para búsqueda rápida
+  searchText  String    // Nombre completo, placas, etc.
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([incidentId])
+  @@index([type])
+  @@map("involved")
+}
+
+// ============================================
+// CORPORACIONES EN INCIDENTES
+// ============================================
+
+model IncidentCorporation {
+  id            String      @id @default(uuid())
+  incidentId    String
+  incident      Incident    @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  corporationId String
+  corporation   Corporation @relation(fields: [corporationId], references: [id])
+
+  status        String      @default("PENDIENTE") // PENDIENTE, ENVIADO, CERRADO, ERROR
+  isSuggested   Boolean     @default(false)
+  sentAt        DateTime?
+  closedAt      DateTime?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([incidentId, corporationId])
+  @@map("incident_corporations")
+}
+
+// ============================================
+// MISIONES Y DESPACHO
+// ============================================
+
+model Mission {
+  id          String    @id @default(uuid())
+  incidentId  String
+  incident    Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  unitId      String
+  unit        Unit      @relation(fields: [unitId], references: [id])
+
+  // Etapas de la misión (no retrocede)
+  status      String    @default("ASIGNADA") // ASIGNADA, EN_CAMINO, EN_LUGAR, ATENDIDA, ATENDIDA_CON_DETENCION, FALSO
+
+  // Tiempos
+  assignedAt  DateTime  @default(now())
+  enRouteAt   DateTime?
+  arrivedAt   DateTime?
+  completedAt DateTime?
+
+  // Información adicional
+  detaineesCount Int?
+  falseReason   String?
+  notes         String?
+
+  // Tiempos calculados
+  responseTime  Int?      // Minutos hasta llegar
+  totalTime     Int?      // Minutos totales
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  statusHistory MissionStatus[]
+
+  @@index([incidentId])
+  @@index([unitId])
+  @@index([status])
+  @@map("missions")
+}
+
+model MissionStatus {
+  id          String    @id @default(uuid())
+  missionId   String
+  mission     Mission   @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  fromStatus  String?
+  toStatus    String
+  notes       String?
+
+  createdAt   DateTime  @default(now())
+  createdBy   String?
+
+  @@map("mission_statuses")
+}
+
+// ============================================
+// BITÁCORA DE UNIDADES
+// ============================================
+
+model UnitLog {
+  id          String    @id @default(uuid())
+  unitId      String
+  unit        Unit      @relation(fields: [unitId], references: [id])
+
+  event       String    // INICIO_TURNO, ASIGNADA, EN_CAMINO, EN_LUGAR, ATENDIDA, DISPONIBLE, NO_DISPONIBLE
+  details     String?
+  sector      String?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([unitId, createdAt])
+  @@map("unit_logs")
+}
+
+// ============================================
+// HISTORIAL Y AUDITORÍA
+// ============================================
+
+model IncidentHistory {
+  id          String    @id @default(uuid())
+  incidentId  String
+  incident    Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  action      String    // CREADO, MODIFICADO, CANALIZADO, CERRADO, REACTIVADO
+  field       String?
+  oldValue    String?
+  newValue    String?
+  userId      String?
+  userName    String?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([incidentId, createdAt])
+  @@map("incident_history")
+}
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+
+  action      String    // LOGIN, LOGOUT, CREATE, UPDATE, DELETE, etc.
+  entity      String    // INCIDENT, USER, UNIT, etc.
+  entityId    String?
+
+  beforeData  Json?
+  afterData   Json?
+
+  ipAddress   String?
+  userAgent   String?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}
+
+// ============================================
+// AUSENCIAS Y CONTROL DE OPERADORES
+// ============================================
+
+model Absence {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+
+  reason      String    // COMIDA, BAÑO, DESCANSO, OTRO
+  status      String    @default("PENDIENTE") // PENDIENTE, APROBADA, RECHAZADA
+
+  requestedAt DateTime  @default(now())
+  startedAt   DateTime?
+  endedAt     DateTime?
+  duration    Int?      // En minutos
+
+  approvedBy  String?
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+
+  notes       String?
+
+  @@index([userId, requestedAt])
+  @@map("absences")
+}
+
+// ============================================
+// RELACIONES MANY-TO-MANY
+// ============================================
+
+model UserMunicipality {
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  municipalityId String
+  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime     @default(now())
+
+  @@id([userId, municipalityId])
+  @@map("user_municipalities")
+}
+
+model UserCorporation {
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  corporationId String
+  corporation   Corporation @relation(fields: [corporationId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime    @default(now())
+
+  @@id([userId, corporationId])
+  @@map("user_corporations")
+}
