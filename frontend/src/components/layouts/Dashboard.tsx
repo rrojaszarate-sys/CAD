@@ -35,6 +35,11 @@ import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { logout } from '@store/slices/authSlice'
 import authService from '@services/authService'
+import IncidentForm from '@modules/incidentes/IncidentForm'
+import DispatchPanel from '@modules/despacho/DispatchPanel'
+import SupervisionPanel from '@modules/supervision/SupervisionPanel'
+import AdminPanel from '@modules/admin/AdminPanel'
+import ReportsPanel from '@modules/reportes/ReportsPanel'
 
 const drawerWidth = 260
 
@@ -258,12 +263,12 @@ function Dashboard() {
       >
         <Routes>
           <Route path="/" element={<DashboardHome />} />
-          <Route path="/llamadas" element={<div>Módulo de Llamadas (En desarrollo)</div>} />
-          <Route path="/incidentes" element={<div>Módulo de Incidentes (En desarrollo)</div>} />
-          <Route path="/despacho" element={<div>Módulo de Despacho (En desarrollo)</div>} />
-          <Route path="/supervision" element={<div>Módulo de Supervisión (En desarrollo)</div>} />
-          <Route path="/admin" element={<div>Módulo de Administración (En desarrollo)</div>} />
-          <Route path="/reportes" element={<div>Módulo de Reportes (En desarrollo)</div>} />
+          <Route path="/llamadas" element={<div>Módulo de Llamadas - Popup disponible (componente IncomingCallPopup)</div>} />
+          <Route path="/incidentes" element={<IncidentForm />} />
+          <Route path="/despacho" element={<DispatchPanel />} />
+          <Route path="/supervision" element={<SupervisionPanel />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/reportes" element={<ReportsPanel />} />
         </Routes>
       </Box>
     </Box>
