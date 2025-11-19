@@ -6,6 +6,7 @@ import morgan from 'morgan'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import dotenv from 'dotenv'
+import apiRoutes from './routes/index.js'
 
 // Cargar variables de entorno
 dotenv.config()
@@ -53,16 +54,8 @@ app.get('/health', (req, res) => {
   })
 })
 
-// API Routes (TODO: Implementar)
-app.get('/api', (req, res) => {
-  res.json({
-    message: 'Sistema CAD API - v1.0.0',
-    endpoints: {
-      health: '/health',
-      api: '/api',
-    },
-  })
-})
+// API Routes
+app.use('/api', apiRoutes)
 
 // Socket.IO eventos (TODO: Implementar)
 io.on('connection', (socket) => {
