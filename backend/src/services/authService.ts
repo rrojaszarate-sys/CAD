@@ -20,6 +20,7 @@ export interface LoginResponse {
     username: string
     firstName: string
     lastName: string
+    middleName?: string
     email?: string
     profile: {
       id: string
@@ -38,84 +39,84 @@ export class AuthService {
     const { username, password, profileId, phoneAccess, extension } = credentials
 
     // Buscar usuario
-    const user = await prisma.user.findUnique({
-      where: { username: username.toUpperCase() },
+    const usuario = await prisma.usuario.findUnique({
+      where: { nombreUsuario: username.toUpperCase() },
       include: {
-        profile: true,
-        municipalities: {
+        perfil: true,
+        municipios: {
           include: {
-            municipality: true,
+            municipio: true,
           },
         },
-        corporations: {
+        corporaciones: {
           include: {
-            corporation: true,
+            corporacion: true,
           },
         },
       },
     })
 
-    if (!user) {
+    if (!usuario) {
       throw new Error('Usuario no registrado en el sistema')
     }
 
     // Verificar si está activo
-    if (!user.isActive) {
+    if (!usuario.estaActivo) {
       throw new Error('Usuario inactivo')
     }
 
     // Verificar si está bloqueado
-    if (user.isBlocked) {
+    if (usuario.estaBloqueado) {
       throw new Error('Usuario bloqueado por múltiples intentos fallidos')
     }
 
     // Verificar contraseña
-    const isPasswordValid = await bcrypt.compare(password, user.password)
+    const isPasswordValid = await bcrypt.compare(password, usuario.contrasena)
 
     if (!isPasswordValid) {
       // Incrementar intentos fallidos
-      await this.handleFailedLogin(user.id)
+      await this.handleFailedLogin(usuario.id)
       throw new Error('Contraseña incorrecta')
     }
 
     // Validar acceso por telefonía si aplica
     if (phoneAccess) {
-      if (!user.phoneAccessEnabled) {
+      if (!usuario.accesoTelefoniaHabilitado) {
         throw new Error('Usuario no tiene acceso por telefonía habilitado')
       }
 
-      if (!user.extensionActive) {
+      if (!usuario.extensionActiva) {
         throw new Error('Extensión no está dada de alta o no se encuentra activa')
       }
 
-      if (extension && user.extension !== extension) {
+      if (extension && usuario.extension !== extension) {
         throw new Error('Extensión no coincide')
       }
     }
 
     // Validar perfil si se especifica
-    if (profileId && user.profileId !== profileId) {
+    if (profileId && usuario.perfilId !== profileId) {
       throw new Error('Perfil no asignado al usuario')
     }
 
     // Reset intentos fallidos
-    await prisma.user.update({
-      where: { id: user.id },
+    await prisma.usuario.update({
+      where: { id: usuario.id },
       data: {
-        loginAttempts: 0,
-        lastLogin: new Date(),
+        intentosLogin: 0,
+        ultimoLogin: new Date(),
       },
     })
 
     // Registrar en auditoría
-    await prisma.auditLog.create({
+    await prisma.registroAuditoria.create({
       data: {
-        userId: user.id,
-        action: 'LOGIN',
-        entity: 'USER',
-        entityId: user.id,
-        afterData: {
-          username: user.username,
+        usuarioId: usuario.id,
+        accion: 'LOGIN',
+        entidad: 'USUARIO',
+        entidadId: usuario.id,
+        datosPosteriores: {
+          nombreUsuario: usuario.nombreUsuario,
           timestamp: new Date().toISOString(),
         },
       },
@@ -123,25 +124,26 @@ export class AuthService {
 
     // Generar tokens
     const tokenPayload: TokenPayload = {
-      userId: user.id,
-      username: user.username,
-      profileId: user.profile.id,
-      profileName: user.profile.name,
+      userId: usuario.id,
+      username: usuario.nombreUsuario,
+      profileId: usuario.perfil.id,
+      profileName: usuario.perfil.nombre,
     }
 
     const tokens = generateTokenPair(tokenPayload)
 
     return {
       user: {
-        id: user.id,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email || undefined,
+        id: usuario.id,
+        username: usuario.nombreUsuario,
+        firstName: usuario.nombre,
+        lastName: usuario.apellidoPaterno,
+        middleName: usuario.apellidoMaterno || undefined,
+        email: usuario.correoElectronico || undefined,
         profile: {
-          id: user.profile.id,
-          name: user.profile.name,
-          permissions: user.profile.permissions,
+          id: usuario.perfil.id,
+          name: usuario.perfil.nombre,
+          permissions: usuario.perfil.permisos,
         },
       },
       tokens,
@@ -149,31 +151,31 @@ export class AuthService {
   }
 
   async handleFailedLogin(userId: string): Promise<void> {
-    const user = await prisma.user.findUnique({
+    const usuario = await prisma.usuario.findUnique({
       where: { id: userId },
     })
 
-    if (!user) return
+    if (!usuario) return
 
-    const newAttempts = user.loginAttempts + 1
+    const newAttempts = usuario.intentosLogin + 1
 
     // Si alcanza el máximo, bloquear
     if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
-      await prisma.user.update({
+      await prisma.usuario.update({
         where: { id: userId },
         data: {
-          loginAttempts: newAttempts,
-          isBlocked: true,
+          intentosLogin: newAttempts,
+          estaBloqueado: true,
         },
       })
 
       // Programar desbloqueo automático (esto debería manejarse con un job)
       // Por ahora solo incrementamos intentos
     } else {
-      await prisma.user.update({
+      await prisma.usuario.update({
         where: { id: userId },
         data: {
-          loginAttempts: newAttempts,
+          intentosLogin: newAttempts,
         },
       })
     }
@@ -181,13 +183,13 @@ export class AuthService {
 
   async logout(userId: string): Promise<void> {
     // Registrar en auditoría
-    await prisma.auditLog.create({
+    await prisma.registroAuditoria.create({
       data: {
-        userId,
-        action: 'LOGOUT',
-        entity: 'USER',
-        entityId: userId,
-        afterData: {
+        usuarioId: userId,
+        accion: 'LOGOUT',
+        entidad: 'USUARIO',
+        entidadId: userId,
+        datosPosteriores: {
           timestamp: new Date().toISOString(),
         },
       },
@@ -197,32 +199,32 @@ export class AuthService {
   }
 
   async getAvailableProfiles(username: string): Promise<any[]> {
-    const user = await prisma.user.findUnique({
-      where: { username: username.toUpperCase() },
+    const usuario = await prisma.usuario.findUnique({
+      where: { nombreUsuario: username.toUpperCase() },
       include: {
-        profile: true,
+        perfil: true,
       },
     })
 
-    if (!user) {
+    if (!usuario) {
       throw new Error('Usuario no encontrado')
     }
 
     // Por ahora solo retornamos el perfil del usuario
     // En un sistema más complejo, un usuario podría tener múltiples perfiles
-    return [user.profile]
+    return [usuario.perfil]
   }
 
   async validateExtension(extension: string): Promise<boolean> {
-    const user = await prisma.user.findFirst({
+    const usuario = await prisma.usuario.findFirst({
       where: {
         extension,
-        extensionActive: true,
-        phoneAccessEnabled: true,
+        extensionActiva: true,
+        accesoTelefoniaHabilitado: true,
       },
     })
 
-    return !!user
+    return !!usuario
   }
 }
 

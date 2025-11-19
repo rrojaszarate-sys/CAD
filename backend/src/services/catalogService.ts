@@ -5,39 +5,39 @@ const prisma = new PrismaClient()
 export class CatalogService {
   // Municipios
   async getMunicipalities() {
-    return await prisma.municipality.findMany({
-      where: { isActive: true },
-      orderBy: { name: 'asc' },
+    return await prisma.municipio.findMany({
+      where: { estaActivo: true },
+      orderBy: { nombre: 'asc' },
     })
   }
 
   async getMunicipalityById(id: string) {
-    return await prisma.municipality.findUnique({
+    return await prisma.municipio.findUnique({
       where: { id },
     })
   }
 
   // Colonias
   async getColonies(municipalityId?: string, search?: string) {
-    const where: any = { isActive: true }
+    const where: any = { estaActivo: true }
 
     if (municipalityId) {
-      where.municipalityId = municipalityId
+      where.municipioId = municipalityId
     }
 
     if (search) {
-      where.name = {
+      where.nombre = {
         contains: search,
         mode: 'insensitive',
       }
     }
 
-    return await prisma.colony.findMany({
+    return await prisma.colonia.findMany({
       where,
       include: {
-        municipality: true,
+        municipio: true,
       },
-      orderBy: { name: 'asc' },
+      orderBy: { nombre: 'asc' },
       take: 50,
     })
   }
@@ -50,84 +50,84 @@ export class CatalogService {
 
   // Calles
   async getStreets(municipalityId?: string, search?: string) {
-    const where: any = { isActive: true }
+    const where: any = { estaActivo: true }
 
     if (municipalityId) {
-      where.municipalityId = municipalityId
+      where.municipioId = municipalityId
     }
 
     if (search && search.length >= 2) {
-      where.name = {
+      where.nombre = {
         contains: search,
         mode: 'insensitive',
       }
     }
 
-    return await prisma.street.findMany({
+    return await prisma.calle.findMany({
       where,
-      orderBy: { name: 'asc' },
+      orderBy: { nombre: 'asc' },
       take: 50,
     })
   }
 
   // Tipos de Incidente
   async getIncidentTypes() {
-    return await prisma.incidentType.findMany({
-      where: { isActive: true },
+    return await prisma.tipoIncidente.findMany({
+      where: { estaActivo: true },
       include: {
-        parent: true,
-        children: true,
+        padre: true,
+        hijos: true,
       },
-      orderBy: { name: 'asc' },
+      orderBy: { nombre: 'asc' },
     })
   }
 
   async getIncidentTypeHierarchy() {
     // Obtener solo los tipos raíz (categorías)
-    const rootTypes = await prisma.incidentType.findMany({
+    const rootTypes = await prisma.tipoIncidente.findMany({
       where: {
-        isActive: true,
-        parentId: null,
+        estaActivo: true,
+        padreId: null,
       },
       include: {
-        children: {
-          where: { isActive: true },
+        hijos: {
+          where: { estaActivo: true },
           include: {
-            children: {
-              where: { isActive: true },
+            hijos: {
+              where: { estaActivo: true },
             },
           },
         },
       },
-      orderBy: { name: 'asc' },
+      orderBy: { nombre: 'asc' },
     })
 
     return rootTypes
   }
 
   async getIncidentTypeById(id: string) {
-    return await prisma.incidentType.findUnique({
+    return await prisma.tipoIncidente.findUnique({
       where: { id },
       include: {
-        parent: true,
+        padre: true,
       },
     })
   }
 
   // Corporaciones
   async getCorporations() {
-    return await prisma.corporation.findMany({
-      where: { isActive: true },
-      orderBy: { name: 'asc' },
+    return await prisma.corporacion.findMany({
+      where: { estaActivo: true },
+      orderBy: { nombre: 'asc' },
     })
   }
 
   async getCorporationById(id: string) {
-    return await prisma.corporation.findUnique({
+    return await prisma.corporacion.findUnique({
       where: { id },
       include: {
-        units: {
-          where: { isActive: true },
+        unidades: {
+          where: { estaActivo: true },
         },
       },
     })
@@ -135,57 +135,57 @@ export class CatalogService {
 
   // Unidades disponibles por corporación
   async getAvailableUnitsByCorporation(corporationId: string) {
-    return await prisma.unit.findMany({
+    return await prisma.unidad.findMany({
       where: {
-        corporationId,
-        isActive: true,
-        status: 'DISPONIBLE',
+        corporacionId: corporationId,
+        estaActivo: true,
+        estatus: 'DISPONIBLE',
       },
       include: {
-        corporation: true,
+        corporacion: true,
       },
-      orderBy: { economicNumber: 'asc' },
+      orderBy: { numeroEconomico: 'asc' },
     })
   }
 
   // Perfiles
   async getProfiles() {
-    return await prisma.profile.findMany({
-      where: { isActive: true },
-      orderBy: { name: 'asc' },
+    return await prisma.perfil.findMany({
+      where: { estaActivo: true },
+      orderBy: { nombre: 'asc' },
     })
   }
 
   // Stats para widgets
   async getCorporationStats(corporationId: string) {
-    const total = await prisma.unit.count({
+    const total = await prisma.unidad.count({
       where: {
-        corporationId,
-        isActive: true,
+        corporacionId: corporationId,
+        estaActivo: true,
       },
     })
 
-    const available = await prisma.unit.count({
+    const available = await prisma.unidad.count({
       where: {
-        corporationId,
-        isActive: true,
-        status: 'DISPONIBLE',
+        corporacionId: corporationId,
+        estaActivo: true,
+        estatus: 'DISPONIBLE',
       },
     })
 
-    const enRoute = await prisma.unit.count({
+    const enRoute = await prisma.unidad.count({
       where: {
-        corporationId,
-        isActive: true,
-        status: 'EN_CAMINO',
+        corporacionId: corporationId,
+        estaActivo: true,
+        estatus: 'EN_CAMINO',
       },
     })
 
-    const onSite = await prisma.unit.count({
+    const onSite = await prisma.unidad.count({
       where: {
-        corporationId,
-        isActive: true,
-        status: 'EN_LUGAR',
+        corporacionId: corporationId,
+        estaActivo: true,
+        estatus: 'EN_LUGAR',
       },
     })
 

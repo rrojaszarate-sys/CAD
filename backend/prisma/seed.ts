@@ -8,45 +8,44 @@ async function main() {
 
   // Limpiar datos existentes (opcional - comentar en producción)
   console.log('🧹 Limpiando datos existentes...')
-  await prisma.auditLog.deleteMany()
-  await prisma.absence.deleteMany()
-  await prisma.missionStatus.deleteMany()
-  await prisma.mission.deleteMany()
-  await prisma.unitLog.deleteMany()
-  await prisma.incidentHistory.deleteMany()
-  await prisma.incidentCorporation.deleteMany()
-  await prisma.involved.deleteMany()
-  await prisma.phoneCall.deleteMany()
-  await prisma.incident.deleteMany()
-  await prisma.phoneRestriction.deleteMany()
-  await prisma.unit.deleteMany()
-  await prisma.corporation.deleteMany()
-  await prisma.incidentType.deleteMany()
-  await prisma.street.deleteMany()
-  await prisma.colony.deleteMany()
-  await prisma.userCorporation.deleteMany()
-  await prisma.userMunicipality.deleteMany()
-  await prisma.user.deleteMany()
-  await prisma.profile.deleteMany()
-  await prisma.municipality.deleteMany()
+  await prisma.registroAuditoria.deleteMany()
+  await prisma.ausencia.deleteMany()
+  await prisma.historialEstadoMision.deleteMany()
+  await prisma.mision.deleteMany()
+  await prisma.registroUnidad.deleteMany()
+  await prisma.historialIncidente.deleteMany()
+  await prisma.involucrado.deleteMany()
+  await prisma.llamadaTelefonica.deleteMany()
+  await prisma.incidente.deleteMany()
+  await prisma.restriccionTelefonica.deleteMany()
+  await prisma.unidad.deleteMany()
+  await prisma.corporacion.deleteMany()
+  await prisma.tipoIncidente.deleteMany()
+  await prisma.calle.deleteMany()
+  await prisma.colonia.deleteMany()
+  await prisma.usuarioCorporacion.deleteMany()
+  await prisma.usuarioMunicipio.deleteMany()
+  await prisma.usuario.deleteMany()
+  await prisma.perfil.deleteMany()
+  await prisma.municipio.deleteMany()
 
   // 1. Crear Perfiles
   console.log('👥 Creando perfiles...')
   const profiles = await Promise.all([
-    prisma.profile.create({
+    prisma.perfil.create({
       data: {
-        name: 'Administrador',
-        description: 'Acceso completo al sistema',
-        permissions: {
+        nombre: 'Administrador',
+        descripcion: 'Acceso completo al sistema',
+        permisos: {
           all: true,
         },
       },
     }),
-    prisma.profile.create({
+    prisma.perfil.create({
       data: {
-        name: 'Supervisor',
-        description: 'Supervisión de operaciones',
-        permissions: {
+        nombre: 'Supervisor',
+        descripcion: 'Supervisión de operaciones',
+        permisos: {
           viewAll: true,
           manageRestrictions: true,
           approveAbsences: true,
@@ -55,22 +54,22 @@ async function main() {
         },
       },
     }),
-    prisma.profile.create({
+    prisma.perfil.create({
       data: {
-        name: 'Operador',
-        description: 'Operador de recepción de llamadas',
-        permissions: {
+        nombre: 'Operador',
+        descripcion: 'Operador de recepción de llamadas',
+        permisos: {
           receiveCalls: true,
           createIncidents: true,
           viewIncidents: true,
         },
       },
     }),
-    prisma.profile.create({
+    prisma.perfil.create({
       data: {
-        name: 'Despachador',
-        description: 'Despacho de unidades',
-        permissions: {
+        nombre: 'Despachador',
+        descripcion: 'Despacho de unidades',
+        permisos: {
           viewIncidents: true,
           assignUnits: true,
           manageMissions: true,
@@ -84,10 +83,10 @@ async function main() {
   // 2. Crear Municipios
   console.log('🏙️  Creando municipios...')
   const municipalities = await Promise.all([
-    prisma.municipality.create({ data: { name: 'Toluca', state: 'Estado de México' } }),
-    prisma.municipality.create({ data: { name: 'Metepec', state: 'Estado de México' } }),
-    prisma.municipality.create({ data: { name: 'Lerma', state: 'Estado de México' } }),
-    prisma.municipality.create({ data: { name: 'Zinacantepec', state: 'Estado de México' } }),
+    prisma.municipio.create({ data: { nombre: 'Toluca', estado: 'Estado de México' } }),
+    prisma.municipio.create({ data: { nombre: 'Metepec', estado: 'Estado de México' } }),
+    prisma.municipio.create({ data: { nombre: 'Lerma', estado: 'Estado de México' } }),
+    prisma.municipio.create({ data: { nombre: 'Zinacantepec', estado: 'Estado de México' } }),
   ])
 
   console.log(`✅ ${municipalities.length} municipios creados`)
@@ -95,31 +94,31 @@ async function main() {
   // 3. Crear Colonias (Toluca)
   console.log('🏘️  Creando colonias...')
   const colonies = await Promise.all([
-    prisma.colony.create({
+    prisma.colonia.create({
       data: {
-        name: 'Centro',
-        postalCode: '50000',
-        municipalityId: municipalities[0].id,
-        latitude: 19.2926,
-        longitude: -99.6568,
+        nombre: 'Centro',
+        codigoPostal: '50000',
+        municipioId: municipalities[0].id,
+        latitud: 19.2926,
+        longitud: -99.6568,
       },
     }),
-    prisma.colony.create({
+    prisma.colonia.create({
       data: {
-        name: 'La Merced',
-        postalCode: '50080',
-        municipalityId: municipalities[0].id,
-        latitude: 19.2850,
-        longitude: -99.6600,
+        nombre: 'La Merced',
+        codigoPostal: '50080',
+        municipioId: municipalities[0].id,
+        latitud: 19.2850,
+        longitud: -99.6600,
       },
     }),
-    prisma.colony.create({
+    prisma.colonia.create({
       data: {
-        name: 'San Sebastián',
-        postalCode: '50090',
-        municipalityId: municipalities[0].id,
-        latitude: 19.2950,
-        longitude: -99.6450,
+        nombre: 'San Sebastián',
+        codigoPostal: '50090',
+        municipioId: municipalities[0].id,
+        latitud: 19.2950,
+        longitud: -99.6450,
       },
     }),
   ])
@@ -129,17 +128,17 @@ async function main() {
   // 4. Crear Calles
   console.log('🛣️  Creando calles...')
   const streets = await Promise.all([
-    prisma.street.create({
-      data: { name: 'Hidalgo', municipalityId: municipalities[0].id },
+    prisma.calle.create({
+      data: { nombre: 'Hidalgo', municipioId: municipalities[0].id },
     }),
-    prisma.street.create({
-      data: { name: 'Juárez', municipalityId: municipalities[0].id },
+    prisma.calle.create({
+      data: { nombre: 'Juárez', municipioId: municipalities[0].id },
     }),
-    prisma.street.create({
-      data: { name: 'Independencia', municipalityId: municipalities[0].id },
+    prisma.calle.create({
+      data: { nombre: 'Independencia', municipioId: municipalities[0].id },
     }),
-    prisma.street.create({
-      data: { name: 'Morelos', municipalityId: municipalities[0].id },
+    prisma.calle.create({
+      data: { nombre: 'Morelos', municipioId: municipalities[0].id },
     }),
   ])
 
@@ -149,48 +148,48 @@ async function main() {
   console.log('🚨 Creando tipos de incidente...')
   const incidentTypes = await Promise.all([
     // Seguridad Pública
-    prisma.incidentType.create({
+    prisma.tipoIncidente.create({
       data: {
-        code: 'SEG',
-        name: 'Seguridad Pública',
-        category: 'CATEGORIA',
-        defaultPriority: 'ALTA',
-        expectedResponseTime: 5,
-        suggestedCorporations: [],
+        codigo: 'SEG',
+        nombre: 'Seguridad Pública',
+        categoria: 'CATEGORIA',
+        prioridadPorDefecto: 'ALTA',
+        tiempoRespuestaEsperado: 5,
+        corporacionesSugeridas: [],
       },
     }),
     // Robo
-    prisma.incidentType.create({
+    prisma.tipoIncidente.create({
       data: {
-        code: 'SEG_ROBO',
-        name: 'Robo',
-        category: 'Seguridad Pública',
-        defaultPriority: 'ALTA',
-        expectedResponseTime: 5,
-        requiresQuestionnaire: true,
-        suggestedCorporations: [],
+        codigo: 'SEG_ROBO',
+        nombre: 'Robo',
+        categoria: 'Seguridad Pública',
+        prioridadPorDefecto: 'ALTA',
+        tiempoRespuestaEsperado: 5,
+        requiereCuestionario: true,
+        corporacionesSugeridas: [],
       },
     }),
     // Emergencias Médicas
-    prisma.incidentType.create({
+    prisma.tipoIncidente.create({
       data: {
-        code: 'MED',
-        name: 'Emergencias Médicas',
-        category: 'CATEGORIA',
-        defaultPriority: 'CRITICA',
-        expectedResponseTime: 3,
-        suggestedCorporations: [],
+        codigo: 'MED',
+        nombre: 'Emergencias Médicas',
+        categoria: 'CATEGORIA',
+        prioridadPorDefecto: 'CRITICA',
+        tiempoRespuestaEsperado: 3,
+        corporacionesSugeridas: [],
       },
     }),
     // Protección Civil
-    prisma.incidentType.create({
+    prisma.tipoIncidente.create({
       data: {
-        code: 'PC',
-        name: 'Protección Civil',
-        category: 'CATEGORIA',
-        defaultPriority: 'MEDIA',
-        expectedResponseTime: 10,
-        suggestedCorporations: [],
+        codigo: 'PC',
+        nombre: 'Protección Civil',
+        categoria: 'CATEGORIA',
+        prioridadPorDefecto: 'MEDIA',
+        tiempoRespuestaEsperado: 10,
+        corporacionesSugeridas: [],
       },
     }),
   ])
@@ -200,39 +199,39 @@ async function main() {
   // 6. Crear Corporaciones
   console.log('🚔 Creando corporaciones...')
   const corporations = await Promise.all([
-    prisma.corporation.create({
+    prisma.corporacion.create({
       data: {
-        code: 'PM',
-        name: 'Policía Municipal',
-        type: 'Policía',
+        codigo: 'PM',
+        nombre: 'Policía Municipal',
+        tipo: 'Policía',
       },
     }),
-    prisma.corporation.create({
+    prisma.corporacion.create({
       data: {
-        code: 'PE',
-        name: 'Policía Estatal',
-        type: 'Policía',
+        codigo: 'PE',
+        nombre: 'Policía Estatal',
+        tipo: 'Policía',
       },
     }),
-    prisma.corporation.create({
+    prisma.corporacion.create({
       data: {
-        code: 'CR',
-        name: 'Cruz Roja',
-        type: 'Médica',
+        codigo: 'CR',
+        nombre: 'Cruz Roja',
+        tipo: 'Médica',
       },
     }),
-    prisma.corporation.create({
+    prisma.corporacion.create({
       data: {
-        code: 'BOM',
-        name: 'Bomberos',
-        type: 'Protección Civil',
+        codigo: 'BOM',
+        nombre: 'Bomberos',
+        tipo: 'Protección Civil',
       },
     }),
-    prisma.corporation.create({
+    prisma.corporacion.create({
       data: {
-        code: 'PC',
-        name: 'Protección Civil',
-        type: 'Protección Civil',
+        codigo: 'PC',
+        nombre: 'Protección Civil',
+        tipo: 'Protección Civil',
       },
     }),
   ])
@@ -243,12 +242,12 @@ async function main() {
   console.log('🚓 Creando unidades...')
   const units = []
   for (let i = 1; i <= 10; i++) {
-    const unit = await prisma.unit.create({
+    const unit = await prisma.unidad.create({
       data: {
-        economicNumber: `PM-${String(i).padStart(3, '0')}`,
-        plateNumber: `ABC-${String(i).padStart(3, '0')}-A`,
-        corporationId: corporations[0].id, // Policía Municipal
-        status: 'DISPONIBLE',
+        numeroEconomico: `PM-${String(i).padStart(3, '0')}`,
+        numeroPlacas: `ABC-${String(i).padStart(3, '0')}-A`,
+        corporacionId: corporations[0].id, // Policía Municipal
+        estatus: 'DISPONIBLE',
         sector: i <= 3 ? 'Norte' : i <= 6 ? 'Centro' : 'Sur',
       },
     })
@@ -261,50 +260,50 @@ async function main() {
   console.log('👤 Creando usuarios...')
   const hashedPassword = await bcrypt.hash('Admin123', 12)
 
-  const admin = await prisma.user.create({
+  const admin = await prisma.usuario.create({
     data: {
-      username: 'ADMIN',
-      password: hashedPassword,
-      email: 'admin@cad.local',
-      firstName: 'Administrador',
-      lastName: 'Sistema',
-      profileId: profiles[0].id, // Administrador
-      phoneAccessEnabled: false,
+      nombreUsuario: 'ADMIN',
+      contrasena: hashedPassword,
+      correoElectronico: 'admin@cad.local',
+      nombre: 'Administrador',
+      apellidoPaterno: 'Sistema',
+      perfilId: profiles[0].id, // Administrador
+      accesoTelefoniaHabilitado: false,
     },
   })
 
-  const supervisor = await prisma.user.create({
+  const supervisor = await prisma.usuario.create({
     data: {
-      username: 'SUP_001',
-      password: hashedPassword,
-      firstName: 'Supervisor',
-      lastName: 'Principal',
-      profileId: profiles[1].id, // Supervisor
-      phoneAccessEnabled: false,
+      nombreUsuario: 'SUP_001',
+      contrasena: hashedPassword,
+      nombre: 'Supervisor',
+      apellidoPaterno: 'Principal',
+      perfilId: profiles[1].id, // Supervisor
+      accesoTelefoniaHabilitado: false,
     },
   })
 
-  const operador = await prisma.user.create({
+  const operador = await prisma.usuario.create({
     data: {
-      username: 'OP_001',
-      password: hashedPassword,
-      firstName: 'Operador',
-      lastName: 'Uno',
-      profileId: profiles[2].id, // Operador
-      phoneAccessEnabled: true,
+      nombreUsuario: 'OP_001',
+      contrasena: hashedPassword,
+      nombre: 'Operador',
+      apellidoPaterno: 'Uno',
+      perfilId: profiles[2].id, // Operador
+      accesoTelefoniaHabilitado: true,
       extension: '1001',
-      extensionActive: true,
+      extensionActiva: true,
     },
   })
 
-  const despachador = await prisma.user.create({
+  const despachador = await prisma.usuario.create({
     data: {
-      username: 'DESP_001',
-      password: hashedPassword,
-      firstName: 'Despachador',
-      lastName: 'Uno',
-      profileId: profiles[3].id, // Despachador
-      phoneAccessEnabled: false,
+      nombreUsuario: 'DESP_001',
+      contrasena: hashedPassword,
+      nombre: 'Despachador',
+      apellidoPaterno: 'Uno',
+      perfilId: profiles[3].id, // Despachador
+      accesoTelefoniaHabilitado: false,
     },
   })
 
@@ -313,31 +312,31 @@ async function main() {
   // 9. Asignar Municipios a Usuarios
   console.log('🗺️  Asignando municipios a usuarios...')
   await Promise.all([
-    prisma.userMunicipality.create({
+    prisma.usuarioMunicipio.create({
       data: {
-        userId: admin.id,
-        municipalityId: municipalities[0].id,
+        usuarioId: admin.id,
+        municipioId: municipalities[0].id,
       },
     }),
-    prisma.userMunicipality.create({
+    prisma.usuarioMunicipio.create({
       data: {
-        userId: operador.id,
-        municipalityId: municipalities[0].id,
+        usuarioId: operador.id,
+        municipioId: municipalities[0].id,
       },
     }),
   ])
 
   // 10. Crear Restricciones de ejemplo
   console.log('📵 Creando restricciones telefónicas de ejemplo...')
-  await prisma.phoneRestriction.create({
+  await prisma.restriccionTelefonica.create({
     data: {
-      phoneNumber: '55-1234-5678',
-      type: 'BROMA',
-      personName: 'Juan Pérez',
-      startDate: new Date(),
-      isIndefinite: true,
-      observations: 'Llamadas recurrentes falsas',
-      createdBy: admin.id,
+      numeroTelefono: '55-1234-5678',
+      tipo: 'BROMA',
+      nombrePersona: 'Juan Pérez',
+      fechaInicio: new Date(),
+      esIndefinido: true,
+      observaciones: 'Llamadas recurrentes falsas',
+      creadoPorId: admin.id,
     },
   })
 
