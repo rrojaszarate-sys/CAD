@@ -1,5 +1,12 @@
 import { Request, Response, NextFunction } from 'express'
 import catalogService from '../services/catalogService.js'
+import profileService from '../services/profileService.js'
+import municipalityService from '../services/municipalityService.js'
+import colonyService from '../services/colonyService.js'
+import streetService from '../services/streetService.js'
+import corporationService from '../services/corporationService.js'
+import unitService from '../services/unitService.js'
+import incidentTypeService from '../services/incidentTypeService.js'
 
 export class CatalogController {
   // Municipios
@@ -158,6 +165,216 @@ export class CatalogController {
     try {
       const profiles = await catalogService.getProfiles()
       res.json({ success: true, data: profiles })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  // ============================================
+  // CRUD OPERATIONS
+  // ============================================
+
+  // Municipios CRUD
+  async createMunicipality(req: Request, res: Response) {
+    try {
+      const municipality = await municipalityService.create(req.body, req.user?.userId || '')
+      res.status(201).json({ success: true, data: municipality })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async updateMunicipality(req: Request, res: Response) {
+    try {
+      const municipality = await municipalityService.update(req.params.id, req.body, req.user?.userId || '')
+      res.json({ success: true, data: municipality })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async deleteMunicipality(req: Request, res: Response) {
+    try {
+      await municipalityService.delete(req.params.id, req.user?.userId || '')
+      res.json({ success: true, message: 'Municipio eliminado' })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  // Colonias CRUD
+  async createColony(req: Request, res: Response) {
+    try {
+      const colony = await colonyService.create(req.body, req.user?.userId || '')
+      res.status(201).json({ success: true, data: colony })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async updateColony(req: Request, res: Response) {
+    try {
+      const colony = await colonyService.update(req.params.id, req.body, req.user?.userId || '')
+      res.json({ success: true, data: colony })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async deleteColony(req: Request, res: Response) {
+    try {
+      await colonyService.delete(req.params.id, req.user?.userId || '')
+      res.json({ success: true, message: 'Colonia eliminada' })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  // Calles CRUD
+  async createStreet(req: Request, res: Response) {
+    try {
+      const street = await streetService.create(req.body, req.user?.userId || '')
+      res.status(201).json({ success: true, data: street })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async updateStreet(req: Request, res: Response) {
+    try {
+      const street = await streetService.update(req.params.id, req.body, req.user?.userId || '')
+      res.json({ success: true, data: street })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async deleteStreet(req: Request, res: Response) {
+    try {
+      await streetService.delete(req.params.id, req.user?.userId || '')
+      res.json({ success: true, message: 'Calle eliminada' })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  // Tipos de Incidente CRUD
+  async createIncidentType(req: Request, res: Response) {
+    try {
+      const type = await incidentTypeService.create(req.body, req.user?.userId || '')
+      res.status(201).json({ success: true, data: type })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async updateIncidentType(req: Request, res: Response) {
+    try {
+      const type = await incidentTypeService.update(req.params.id, req.body, req.user?.userId || '')
+      res.json({ success: true, data: type })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async deleteIncidentType(req: Request, res: Response) {
+    try {
+      await incidentTypeService.delete(req.params.id, req.user?.userId || '')
+      res.json({ success: true, message: 'Tipo de incidente eliminado' })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  // Corporaciones CRUD
+  async createCorporation(req: Request, res: Response) {
+    try {
+      const corporation = await corporationService.create(req.body, req.user?.userId || '')
+      res.status(201).json({ success: true, data: corporation })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async updateCorporation(req: Request, res: Response) {
+    try {
+      const corporation = await corporationService.update(req.params.id, req.body, req.user?.userId || '')
+      res.json({ success: true, data: corporation })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async deleteCorporation(req: Request, res: Response) {
+    try {
+      await corporationService.delete(req.params.id, req.user?.userId || '')
+      res.json({ success: true, message: 'Corporación eliminada' })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  // Unidades CRUD
+  async getUnits(req: Request, res: Response) {
+    try {
+      const { corporationId, estatus } = req.query
+      const units = await unitService.getAll(corporationId as string, estatus as string)
+      res.json({ success: true, data: units })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async createUnit(req: Request, res: Response) {
+    try {
+      const unit = await unitService.create(req.body, req.user?.userId || '')
+      res.status(201).json({ success: true, data: unit })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async updateUnit(req: Request, res: Response) {
+    try {
+      const unit = await unitService.update(req.params.id, req.body, req.user?.userId || '')
+      res.json({ success: true, data: unit })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async deleteUnit(req: Request, res: Response) {
+    try {
+      await unitService.delete(req.params.id, req.user?.userId || '')
+      res.json({ success: true, message: 'Unidad eliminada' })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  // Perfiles CRUD
+  async createProfile(req: Request, res: Response) {
+    try {
+      const profile = await profileService.createProfile(req.body, req.user?.userId || '')
+      res.status(201).json({ success: true, data: profile })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async updateProfile(req: Request, res: Response) {
+    try {
+      const profile = await profileService.updateProfile(req.params.id, req.body, req.user?.userId || '')
+      res.json({ success: true, data: profile })
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  }
+
+  async deleteProfile(req: Request, res: Response) {
+    try {
+      await profileService.deleteProfile(req.params.id, req.user?.userId || '')
+      res.json({ success: true, message: 'Perfil eliminado' })
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message })
     }
