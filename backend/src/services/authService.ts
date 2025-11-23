@@ -81,7 +81,7 @@ export class AuthService {
 
     // Validar acceso por telefonía si aplica
     if (phoneAccess) {
-      if (!usuario.accesoTelefoniaHabilitado) {
+      if (!usuario.accesoTelefonicoHabilitado) {
         throw new Error('Usuario no tiene acceso por telefonía habilitado')
       }
 
@@ -104,7 +104,7 @@ export class AuthService {
       where: { id: usuario.id },
       data: {
         intentosLogin: 0,
-        ultimoLogin: new Date(),
+        ultimoAcceso: new Date(),
       },
     })
 
@@ -220,7 +220,7 @@ export class AuthService {
       where: {
         extension,
         extensionActiva: true,
-        accesoTelefoniaHabilitado: true,
+        accesoTelefonicoHabilitado: true,
       },
     })
 

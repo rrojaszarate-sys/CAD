@@ -268,7 +268,7 @@ async function main() {
       nombre: 'Administrador',
       apellidoPaterno: 'Sistema',
       perfilId: profiles[0].id, // Administrador
-      accesoTelefoniaHabilitado: false,
+      accesoTelefonicoHabilitado: false,
     },
   })
 
@@ -279,7 +279,7 @@ async function main() {
       nombre: 'Supervisor',
       apellidoPaterno: 'Principal',
       perfilId: profiles[1].id, // Supervisor
-      accesoTelefoniaHabilitado: false,
+      accesoTelefonicoHabilitado: false,
     },
   })
 
@@ -290,7 +290,7 @@ async function main() {
       nombre: 'Operador',
       apellidoPaterno: 'Uno',
       perfilId: profiles[2].id, // Operador
-      accesoTelefoniaHabilitado: true,
+      accesoTelefonicoHabilitado: true,
       extension: '1001',
       extensionActiva: true,
     },
@@ -303,7 +303,7 @@ async function main() {
       nombre: 'Despachador',
       apellidoPaterno: 'Uno',
       perfilId: profiles[3].id, // Despachador
-      accesoTelefoniaHabilitado: false,
+      accesoTelefonicoHabilitado: false,
     },
   })
 

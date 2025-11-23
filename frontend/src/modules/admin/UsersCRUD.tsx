@@ -68,7 +68,7 @@ interface User {
       nombre: string
     }
   }>
-  accesoTelefoniaHabilitado: boolean
+  accesoTelefonicoHabilitado: boolean
   extension?: string
   extensionActiva: boolean
 }
@@ -100,7 +100,7 @@ const userSchema = yup.object().shape({
   apellidoPaterno: yup.string().required('El apellido paterno es requerido'),
   apellidoMaterno: yup.string(),
   perfilId: yup.string().required('El perfil es requerido'),
-  accesoTelefoniaHabilitado: yup.boolean(),
+  accesoTelefonicoHabilitado: yup.boolean(),
   extension: yup.string(),
   extensionActiva: yup.boolean(),
 })
@@ -173,7 +173,7 @@ export default function UsersCRUD() {
         apellidoMaterno: user.apellidoMaterno || '',
         correoElectronico: user.correoElectronico || '',
         perfilId: user.perfil.id,
-        accesoTelefoniaHabilitado: user.accesoTelefoniaHabilitado,
+        accesoTelefonicoHabilitado: user.accesoTelefonicoHabilitado,
         extension: user.extension || '',
         extensionActiva: user.extensionActiva,
       })
@@ -189,7 +189,7 @@ export default function UsersCRUD() {
         apellidoMaterno: '',
         correoElectronico: '',
         perfilId: '',
-        accesoTelefoniaHabilitado: false,
+        accesoTelefonicoHabilitado: false,
         extension: '',
         extensionActiva: false,
       })
@@ -382,7 +382,7 @@ export default function UsersCRUD() {
                   </Tooltip>
                   <Tooltip title={user.estaActivo ? 'Desactivar' : 'Activar'}>
                     <IconButton size="small" onClick={() => handleToggleStatus(user.id)} color="secondary">
-                      {user.estaActivo ? <LockIcon fontSize="small" /> : <LockOpen fontSize="small" />}
+                      {user.estaActivo ? <LockIcon fontSize="small" /> : <UnlockIcon fontSize="small" />}
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Eliminar">
@@ -545,7 +545,7 @@ export default function UsersCRUD() {
 
               <Grid item xs={12} md={4}>
                 <Controller
-                  name="accesoTelefoniaHabilitado"
+                  name="accesoTelefonicoHabilitado"
                   control={control}
                   defaultValue={false}
                   render={({ field }) => (

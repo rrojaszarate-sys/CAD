@@ -14,7 +14,7 @@ export interface CreateUserDto {
   perfilId: string
   municipiosIds?: string[]
   corporacionesIds?: string[]
-  accesoTelefoniaHabilitado?: boolean
+  accesoTelefonicoHabilitado?: boolean
   extension?: string
   extensionActiva?: boolean
 }
@@ -27,7 +27,7 @@ export interface UpdateUserDto {
   perfilId?: string
   municipiosIds?: string[]
   corporacionesIds?: string[]
-  accesoTelefoniaHabilitado?: boolean
+  accesoTelefonicoHabilitado?: boolean
   extension?: string
   extensionActiva?: boolean
   estaActivo?: boolean
@@ -153,7 +153,7 @@ export class UserService {
         apellidoPaterno: data.apellidoPaterno,
         apellidoMaterno: data.apellidoMaterno,
         perfilId: data.perfilId,
-        accesoTelefoniaHabilitado: data.accesoTelefoniaHabilitado || false,
+        accesoTelefonicoHabilitado: data.accesoTelefonicoHabilitado || false,
         extension: data.extension,
         extensionActiva: data.extensionActiva || false,
       },
@@ -240,7 +240,7 @@ export class UserService {
         apellidoPaterno: data.apellidoPaterno,
         apellidoMaterno: data.apellidoMaterno,
         perfilId: data.perfilId,
-        accesoTelefoniaHabilitado: data.accesoTelefoniaHabilitado,
+        accesoTelefonicoHabilitado: data.accesoTelefonicoHabilitado,
         extension: data.extension,
         extensionActiva: data.extensionActiva,
         estaActivo: data.estaActivo,
