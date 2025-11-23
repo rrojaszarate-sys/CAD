@@ -1,0 +1,126 @@
+{
+  "usuarios": {
+    "admin": {
+      "nombreUsuario": "ADMIN",
+      "contrasena": "Admin123",
+      "nombre": "Administrador",
+      "apellidoPaterno": "Sistema",
+      "perfil": "Administrador"
+    },
+    "operador": {
+      "nombreUsuario": "OP_001",
+      "contrasena": "Admin123",
+      "nombre": "Operador",
+      "apellidoPaterno": "Uno",
+      "perfil": "Operador"
+    },
+    "supervisor": {
+      "nombreUsuario": "SUP_001",
+      "contrasena": "Admin123",
+      "nombre": "Supervisor",
+      "apellidoPaterno": "Principal",
+      "perfil": "Supervisor"
+    },
+    "despachador": {
+      "nombreUsuario": "DESP_001",
+      "contrasena": "Admin123",
+      "nombre": "Despachador",
+      "apellidoPaterno": "Uno",
+      "perfil": "Despachador"
+    },
+    "nuevo": {
+      "nombreUsuario": "TEST_USER_001",
+      "contrasena": "Test123456",
+      "nombre": "Usuario",
+      "apellidoPaterno": "Prueba",
+      "apellidoMaterno": "Sistema",
+      "correoElectronico": "test@cad.local"
+    }
+  },
+  "municipios": {
+    "existente": {
+      "nombre": "Toluca",
+      "estado": "Estado de México"
+    },
+    "nuevo": {
+      "nombre": "Test_Municipio_001",
+      "estado": "Estado de México"
+    }
+  },
+  "colonias": {
+    "existente": {
+      "nombre": "Centro",
+      "codigoPostal": "50000"
+    },
+    "nueva": {
+      "nombre": "Test_Colonia_001",
+      "codigoPostal": "99999"
+    }
+  },
+  "calles": {
+    "existente": {
+      "nombre": "Hidalgo"
+    },
+    "nueva": {
+      "nombre": "Test_Calle_001"
+    }
+  },
+  "corporaciones": {
+    "existente": {
+      "codigo": "PM",
+      "nombre": "Policía Municipal",
+      "tipo": "Policía"
+    },
+    "nueva": {
+      "codigo": "TEST_CORP",
+      "nombre": "Test_Corporacion_001",
+      "tipo": "Policía"
+    }
+  },
+  "unidades": {
+    "existente": {
+      "numeroEconomico": "PM-001",
+      "estatus": "DISPONIBLE"
+    },
+    "nueva": {
+      "numeroEconomico": "TEST-001",
+      "numeroPlacas": "TEST-001-A",
+      "sector": "Test"
+    }
+  },
+  "tiposIncidente": {
+    "existente": {
+      "codigo": "SEG",
+      "nombre": "Seguridad Pública"
+    },
+    "nuevo": {
+      "codigo": "TEST_INC",
+      "nombre": "Test_Incidente_001",
+      "categoria": "CATEGORIA",
+      "prioridadPorDefecto": "MEDIA",
+      "tiempoRespuestaEsperado": 10
+    }
+  },
+  "perfiles": {
+    "existentes": ["Administrador", "Supervisor", "Operador", "Despachador"]
+  },
+  "credencialesInvalidas": {
+    "usuarioNoExiste": {
+      "nombreUsuario": "NOEXISTE",
+      "contrasena": "cualquier"
+    },
+    "contrasenaIncorrecta": {
+      "nombreUsuario": "ADMIN",
+      "contrasena": "incorrecta"
+    }
+  },
+  "mensajesEsperados": {
+    "loginExitoso": "Bienvenido",
+    "loginFallido": "Usuario no registrado|Contraseña incorrecta",
+    "usuarioCreado": "Usuario creado exitosamente",
+    "usuarioActualizado": "Usuario actualizado exitosamente",
+    "usuarioEliminado": "Usuario eliminado exitosamente",
+    "campoRequerido": "es requerido",
+    "correoInvalido": "Correo inválido"
+  }
+}
